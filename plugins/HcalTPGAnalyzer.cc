@@ -1,3 +1,12 @@
+// CMSSW include files
+
+#include "CalibFormats/CaloTPG/interface/CaloTPGTranscoder.h"
+#include "CalibFormats/CaloTPG/interface/CaloTPGRecord.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+
+// Package include files
+
 #include "HcalTPG/HcalTPGAnalyzer/interface/HcalTPGAnalyzer.h"
 
 void HcalTPGAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -11,6 +20,12 @@ void HcalTPGAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
   HcalTrigPrimDigiCollection::const_iterator tp     = tps -> begin();
   HcalTrigPrimDigiCollection::const_iterator tp_end = tps -> end();
+  
+  // Define transcoder for linearizing TP energies
+
+  edm::ESHandle<CaloTPGTranscoder> transcoder;
+  iSetup.get<CaloTPGRecord>().get(transcoder);
+  transcoder->setup(iSetup, CaloTPGTranscoder::HcalTPG);
   
   // Loop over trigger primitives
 
@@ -30,12 +45,20 @@ void HcalTPGAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
     m_hcalTPGTree.depth [ntp] = (int) (*tp).id().depth ();
     m_hcalTPGTree.zside [ntp] = (int) (*tp).id().zside ();
     m_hcalTPGTree.subdet[ntp] = (int) (*tp).id().subdet();
+    m_hcalTPGTree.isHF  [ntp] = ((*tp).id().ietaAbs() >= m_trig_tower_geometry.firstHFTower()) ? 1 : 0;
+    m_hcalTPGTree.isHBHE[ntp] = ((*tp).id().ietaAbs()  < m_trig_tower_geometry.firstHFTower()) ? 1 : 0;
 
     // Sample of interest info
 
     m_hcalTPGTree.SOIfg [ntp] = (int) (*tp).SOI_fineGrain();
     m_hcalTPGTree.SOIcEt[ntp] = (int) (*tp).SOI_compressedEt();
 
+    // Energy info
+    
+    m_hcalTPGTree.et    [ntp] = (float) transcoder->hcaletValue(m_hcalTPGTree.ieta  [ntp],
+								m_hcalTPGTree.iphi  [ntp],
+								m_hcalTPGTree.SOIcEt[ntp]);
+    
     // Other samples info
 
     for (int isample = 0; isample < m_hcalTPGTree.size[ntp]; ++isample){
@@ -44,6 +67,24 @@ void HcalTPGAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
       m_hcalTPGTree.sample_slb       [ntp][isample] = (int) (*tp).sample(isample).slb          ();
       m_hcalTPGTree.sample_slbChan   [ntp][isample] = (int) (*tp).sample(isample).slbChan      ();
       m_hcalTPGTree.sample_slbAndChan[ntp][isample] = (int) (*tp).sample(isample).slbAndChan   ();
+    }
+
+    // Find constituent HcalDetIds
+
+    std::vector<HcalDetId> constituents = m_trig_tower_geometry.detIds ((*tp).id());
+    std::vector<HcalDetId>::iterator constituent     = constituents.begin();
+    std::vector<HcalDetId>::iterator constituent_end = constituents.end();
+
+    // Fill constituents info
+
+    m_hcalTPGTree.nconstituents[ntp] = 0;
+    
+    for (; constituent != constituent_end; ++constituent){
+      m_hcalTPGTree.constituent_ietas [ntp][m_hcalTPGTree.nconstituents[ntp]] = (int) constituent -> ieta  ();
+      m_hcalTPGTree.constituent_iphis [ntp][m_hcalTPGTree.nconstituents[ntp]] = (int) constituent -> iphi  ();
+      m_hcalTPGTree.constituent_depths[ntp][m_hcalTPGTree.nconstituents[ntp]] = (int) constituent -> depth ();
+      m_hcalTPGTree.constituent_dets  [ntp][m_hcalTPGTree.nconstituents[ntp]] = (int) constituent -> subdet();
+      ++m_hcalTPGTree.nconstituents[ntp];
     }
 
     // Count number of TPs

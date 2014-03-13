@@ -21,6 +21,9 @@
 #include "TTree.h"
 #include "TFile.h"
 
+// CMSSW include files
+#include "Geometry/HcalTowerAlgo/interface/HcalTrigTowerGeometry.h"
+
 // Package include files
 
 #include "HcalTPG/HcalTPGAnalyzer/interface/HcalTPGTree.h"
@@ -44,6 +47,7 @@ private:
 
   // Member data
 
+  HcalTrigTowerGeometry m_trig_tower_geometry;
   edm::InputTag   m_source;
   std::string     m_treename;
   TTree *         m_tree;
