@@ -3,8 +3,9 @@
 <use name="FWCore/PluginManager"/>
 <use name="FWCore/ParameterSet"/>
 <use name="CommonTools/UtilAlgos"/>
-<flags EDM_PLUGIN="1"/>
-<export>
+<use name="CalibFormats/CaloTPG"/>
+<use name="Geometry/HcalTowerAlgo"/>
+<library name="HcalTPGHcalTPGAnalyzer_plugins" file="*.cc">
   <use name="HcalTPG/HcalTPGAnalyzer"/>
-  <lib name="1"/>
-</export>
+  <flags EDM_PLUGIN="1"/>
+</library>
