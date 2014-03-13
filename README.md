@@ -12,3 +12,4 @@ Recipe:
 
 Tags:
   * V00-00-00: Initial commit for CMSSW_5_3_9_patch3
+  * V00-01-00: Added HcalDetId constituent info, isHF/isHBHE info, and linear ET info.  Bug fixes.
