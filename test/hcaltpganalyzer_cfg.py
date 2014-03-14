@@ -26,20 +26,26 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.source = cms.Source("PoolSource",
   fileNames = cms.untracked.vstring(
-        'root://eoscms//eos/cms/store/data/Run2012C/MinimumBias/RAW-RECO/25Feb2013-v1/10000/F092B0CE-B27F-E211-9025-00259073E42E.root'
+        #FILENAMES
   )
 )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(-1)
 )
 
 #------------------------------------------------------------------------------------
 # GlobalTag info
+# 
+# This can be used for running on data:
+# process.GlobalTag.globaltag = 'GR_P_V41_AN2::All'
+# 
+# This can be used for running on MC:
+# process.GlobalTag.globaltag = 'START53_V7N::All'
 #------------------------------------------------------------------------------------
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = 'GR_P_V41_AN2::All'
+process.GlobalTag.globaltag = 'GLOBALTAG::All'
 
 #------------------------------------------------------------------------------------
 # HCAL noise module(s)
@@ -67,7 +73,7 @@ process.load("HcalTPG.HcalTPGAnalyzer.hcalTPGAnalyzer_cfi")
 #------------------------------------------------------------------------------------
 
 process.TFileService = cms.Service("TFileService",
-   fileName = cms.string("NoiseTree.root")
+   fileName = cms.string("NoiseTree_JOBNUMBER.root")
 )
 
 #------------------------------------------------------------------------------------
