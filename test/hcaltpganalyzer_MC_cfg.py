@@ -73,7 +73,7 @@ process.load("HcalTPG.HcalTPGAnalyzer.hcalTPGAnalyzer_cfi")
 #------------------------------------------------------------------------------------
 
 process.TFileService = cms.Service("TFileService",
-   fileName = cms.string("NoiseTree_JOBNUMBER.root")
+   fileName = cms.string("OUTPUTFILENAME")
 )
 
 #------------------------------------------------------------------------------------
