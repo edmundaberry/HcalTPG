@@ -77,7 +77,39 @@ process.TFileService = cms.Service("TFileService",
 )
 
 #------------------------------------------------------------------------------------
-# Dump everything (for debuggin only)
+# Filters
+#------------------------------------------------------------------------------------
+
+# HLT high level filter
+process.load('HLTrigger.HLTfilters.hltHighLevel_cfi')
+
+# Scraping filter
+process.load("HcalTPG.HcalTPGAnalyzer.hcalFilters_cfi")
+
+# HBHE noise filter
+process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi') 
+
+# ECAL noise filter
+process.load('RecoMET.METFilters.eeBadScFilter_cfi') 
+
+#------------------------------------------------------------------------------------
+# Zero bias
+#------------------------------------------------------------------------------------
+
+import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt 
+
+process.ZeroBiasAve = hlt.triggerResultsFilter.clone() 
+process.ZeroBiasAve.triggerConditions = cms.vstring('HLT_ZeroBias*',) 
+process.ZeroBiasAve.hltResults = cms.InputTag( "TriggerResults", "", "HLT" ) 
+process.ZeroBiasAve.l1tResults = cms.InputTag("") 
+process.ZeroBiasAve.throw = cms.bool( False ) 
+process.zerobias = cms.Path(process.ZeroBiasAve) 
+
+process.load('HLTrigger.HLTfilters.hltHighLevel_cfi') 
+process.hltHighLevel.HLTPaths = cms.vstring("HLT_ZeroBias_v*") 
+
+#------------------------------------------------------------------------------------
+# Dump everything (for debugging only)
 #------------------------------------------------------------------------------------
 
 process.dump = cms.OutputModule("PoolOutputModule",
@@ -89,20 +121,31 @@ process.dump = cms.OutputModule("PoolOutputModule",
 # Define paths
 #------------------------------------------------------------------------------------
 
-process.raw2digi     = cms.Path    ( process.RawToDigi ) 
-process.emulator     = cms.Path    ( process.emulDigis )
-process.hcalNoiseAna = cms.Path    ( process.HBHENoiseFilterResultProducer * process.hcalNoiseAnalyzer )
-process.hcalTPGAna   = cms.Path    ( process.hcalRealDataTPsAnalyzer * process.hcalEmulatedDataTPsAnalyzer )
-process.DUMP         = cms.EndPath ( process.dump )
+process.analysis = cms.Path (
+    # Filters
+    process.hltHighLevel *    
+    process.noscraping *      
+    process.HBHENoiseFilter * 
+    process.eeBadScFilter *   
+    # Raw-to-digi
+    process.RawToDigi *
+    # Run the emulator (for data only)
+    process.emulDigis *
+    # Produce the HBHE noise results and analyze them
+    process.HBHENoiseFilterResultProducer * 
+    process.hcalNoiseAnalyzer * 
+    # Analyze the trigger primitives
+    process.hcalRealDataTPsAnalyzer *   
+    process.hcalEmulatedDataTPsAnalyzer 
+)
+
+process.DUMP  = cms.EndPath ( process.dump )
 
 #------------------------------------------------------------------------------------
 # Define schedule
 #------------------------------------------------------------------------------------
 
 process.schedule = cms.Schedule(
-    process.raw2digi,
-    process.emulator,
-    process.hcalNoiseAna,
-    process.hcalTPGAna
+    process.analysis
 )
 
