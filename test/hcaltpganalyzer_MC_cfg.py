@@ -123,7 +123,6 @@ process.dump = cms.OutputModule("PoolOutputModule",
 
 process.analysis = cms.Path (
     # Filters
-    process.hltHighLevel *    
     process.noscraping *      
     process.HBHENoiseFilter * 
     process.eeBadScFilter *   
@@ -135,8 +134,7 @@ process.analysis = cms.Path (
     process.HBHENoiseFilterResultProducer * 
     process.hcalNoiseAnalyzer * 
     # Analyze the trigger primitives
-    process.hcalRealDataTPsAnalyzer *   
-    process.hcalEmulatedDataTPsAnalyzer 
+    process.hcalMonteCarloTPsAnalyzer
 )
 
 process.DUMP  = cms.EndPath ( process.dump )
