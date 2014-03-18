@@ -16,3 +16,4 @@ Tags:
   * V00-02-00: Added placeholder strings to python config file to make batch submission easier.
   * V00-03-00: Added filters for running on data & MC in python cfg.  Condensed to one path.
   * V01-00-00: Split data and MC to separate python cfgs.
+  * V01-00-01: Bug fix: added '.root' to file name in MC python cfg.
